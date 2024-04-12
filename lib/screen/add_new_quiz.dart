@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import 'package:software_engineering/database/data_manager.dart';
 import 'package:software_engineering/models/question.dart';
 import 'package:software_engineering/models/quiz.dart';
 import 'package:software_engineering/models/option.dart';
+import 'package:software_engineering/services/auth_service.dart';
+import 'package:software_engineering/services/firestore_service.dart';
 
 /* PATTY DEV
 * This handles the adding of new quizzes screen
@@ -17,13 +17,22 @@ class AddNewQuiz extends StatefulWidget {
 }
 
 class _AddNewQuizState extends State<AddNewQuiz> {
+  final FirestoreService firestoreService = FirestoreService();
+  final AuthService authService = AuthService();
+
   TextEditingController quizNameController = TextEditingController();
   List<List<TextEditingController>> optionControllers = [];
   List<Question> questions = [];
+  String? currentUserId;
 
   @override
   void initState() {
     super.initState();
+    authService.getCurrentUID().then((uid) {
+      // Use the UID as needed
+      currentUserId = uid;
+    });
+
     // Initialize questions list with empty questions
     for (int i = 0; i < 5; i++) {
       questions.add(Question(
@@ -221,16 +230,25 @@ class _AddNewQuizState extends State<AddNewQuiz> {
 
       // Add the new question to the list of questions
       newQuestions.add(newQuestion);
+      print('new question: $newQuestion');
+      print('new questions: $newQuestions');
     }
 
     // Create a new quiz object with the quiz name and dynamically generated questions
     Quiz newQuiz = Quiz(
+      token: currentUserId,
       name: quizNameController.text,
       questions: newQuestions,
     );
 
+    print('current user uid: ${authService.getCurrentUID().toString()}');
+
+    print('new quiz: $newQuiz');
+
     // Add the new quiz to the quizList in the DataManager
-    Provider.of<DataManager>(context, listen: false).addNewQuiz(newQuiz);
+    //Provider.of<DataManager>(context, listen: false).addNewQuiz(newQuiz);
+
+    firestoreService.addQuiz(newQuiz);
 
     // Clear the quizNameController and optionControllers
     quizNameController.clear();

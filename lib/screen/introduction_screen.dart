@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
+import 'package:software_engineering/login/sign_in.dart';
 import 'package:software_engineering/utils/reusableText.dart';
 import '../const/colors.dart';
-import '../controller/bottom_nav_bar.dart';
 import '../database/data_manager.dart';
 
 class IntroductionScreen extends StatefulWidget {
@@ -17,10 +17,8 @@ class _IntroductionScreenState extends State<IntroductionScreen> {
   String? status;
   bool isAgree = false;
 
-  void _start(DataManager value, String status) {
-    if(isAgree && status.isNotEmpty) {
-      value.updateUsername(status);
-
+  void _start(DataManager value) {
+    if(isAgree) {
       Navigator.of(context).push(_createRoute());
     }
     else {
@@ -223,7 +221,7 @@ class _IntroductionScreenState extends State<IntroductionScreen> {
                           ],
                         ),
 
-                        const SizedBox(height: 10,),
+                        /*const SizedBox(height: 10,),
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceAround,
                           children: [
@@ -245,12 +243,12 @@ class _IntroductionScreenState extends State<IntroductionScreen> {
                               }),
                             ),
                           ],
-                        ),
+                        ),*/
                         const SizedBox(height: 20,),
 
                         Center(
                           child: MaterialButton(
-                            onPressed: () => _start(value, status!),
+                            onPressed: () => _start(value),
                             minWidth: 300,
                             elevation: 0,
                             padding: const EdgeInsets.symmetric(vertical: 14),
@@ -278,7 +276,7 @@ class _IntroductionScreenState extends State<IntroductionScreen> {
     const duration = Duration(seconds: 1); // Adjust the duration as needed
 
     return PageRouteBuilder(
-      pageBuilder: (context, animation, secondaryAnimation) => const MyBottomNavBar(),
+      pageBuilder: (context, animation, secondaryAnimation) => const SignInScreen(),
       transitionsBuilder: (context, animation, secondaryAnimation, child) {
         const begin = 0.0;
         const end = 1.0;

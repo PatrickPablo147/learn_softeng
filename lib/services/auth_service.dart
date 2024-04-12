@@ -9,10 +9,6 @@ class AuthService {
       password: password
     );
 
-    // update username
-    //var userUpdateInfo = AdditionalUserInfo(isNewUser: false, username: name);
-    //userUpdateInfo.username = name;
-
     await currentUser.user!.updateDisplayName(name);
     await currentUser.user!.reload();
 
@@ -33,6 +29,10 @@ class AuthService {
   // Get UID
   Future<String> getCurrentUID() async {
     return await _firebaseAuth.currentUser!.uid;
+  }
+
+  Future<String?> getCurrentDisplayName() async {
+    return await _firebaseAuth.currentUser!.displayName;
   }
 
 }

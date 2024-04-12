@@ -4,7 +4,10 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'package:software_engineering/database/data_manager.dart';
 import 'package:software_engineering/models/question.dart';
+import 'package:software_engineering/models/result.dart';
 import 'package:software_engineering/screen/result_screen.dart';
+import 'package:software_engineering/services/auth_service.dart';
+import 'package:software_engineering/services/firestore_service.dart';
 import '../const/colors.dart';
 import '../models/option.dart';
 import '../utils/reusableText.dart';
@@ -29,6 +32,11 @@ class QuizRuntimeScreen extends StatefulWidget {
 class _QuizRuntimeScreenState extends State<QuizRuntimeScreen> {
   late PageController _pageController;
   final CountDownController _countDownController = CountDownController();
+  final AuthService _firebaseAuth = AuthService();
+  final FirestoreService _firestoreService = FirestoreService();
+
+  String? userUID;
+
   int score = 0;
   int _questionNumber = 1;
   bool isLocked = false;
@@ -46,9 +54,12 @@ class _QuizRuntimeScreenState extends State<QuizRuntimeScreen> {
       case 2: _selectedQuiz = widget.selectedQuiz + 11; break;
       default : _selectedQuiz = widget.selectedQuiz;
     }
+
+    _firebaseAuth.getCurrentUID().then((uid) {
+      // Use the UID as needed
+      userUID = uid;
+    });
   }
-
-
 
   @override
   Widget build(BuildContext context) {
@@ -83,6 +94,7 @@ class _QuizRuntimeScreenState extends State<QuizRuntimeScreen> {
 
   questionCard(DataManager value) {
     List<Question> question = value.getQuizList()[_selectedQuiz!].questions;
+    int quizLength = value.getQuizList()[_selectedQuiz!].questions.length;
 
     return Expanded(
       child: PageView.builder(
@@ -132,7 +144,7 @@ class _QuizRuntimeScreenState extends State<QuizRuntimeScreen> {
                     isReverse: true,
                     onComplete: () {
                       setState(() {
-                        if (_questionNumber < value.getQuizList()[_selectedQuiz!].questions.length) {
+                        if (_questionNumber < quizLength) {
                           _pageController.nextPage(
                             duration: const Duration(milliseconds: 250),
                             curve: Curves.easeInOut
@@ -141,7 +153,7 @@ class _QuizRuntimeScreenState extends State<QuizRuntimeScreen> {
                             _questionNumber++;
                           });
                         } else {
-                          if(score > value.getQuizList()[_selectedQuiz!].questions.length / 2) {
+                          if(score > quizLength / 2) {
                             // Set isCompleted to true for the selected topic in the selected quiz
                             Provider.of<DataManager>(context, listen: false)
                                 .getQuizList()[_selectedQuiz!].isCompleted = true;
@@ -150,13 +162,25 @@ class _QuizRuntimeScreenState extends State<QuizRuntimeScreen> {
                             //Provider.of<DataManager>(context, listen: false).notifyListeners();
                           }
 
-                          Provider.of<DataManager>(context, listen: false).addResult(value.quizList[_selectedQuiz!].name, score);
+                          // store to local database
+                          Provider.of<DataManager>(context, listen: false).addResult(
+                              userUID ?? 'NA',
+                              value.quizList[_selectedQuiz!].name,
+                              score
+                          );
+
+                          // store to online database
+                          _firestoreService.addResult(Result(
+                              userToken: userUID!,
+                              quizName: value.quizList[_selectedQuiz!].name,
+                              score: score, takenQuizId: '', quizTakerName: ''
+                          ));
 
                           Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => ResultScreen(
                             courseIndex: widget.courseIndex,
                             selectedQuiz: widget.selectedQuiz,
                             score: score,
-                            total: value.getQuizList()[_selectedQuiz!].questions.length)
+                            total: value.getQuizList()[_selectedQuiz!].questions.length, token: '',)
                           ));
                         }
                       });
@@ -173,7 +197,7 @@ class _QuizRuntimeScreenState extends State<QuizRuntimeScreen> {
               //Option widget
               Expanded(
                 child: SingleChildScrollView(
-                  child: optionWidget(question[index], value),
+                  child: optionWidget(question[index], value, quizLength),
                 ),
               ),
             ],
@@ -183,7 +207,7 @@ class _QuizRuntimeScreenState extends State<QuizRuntimeScreen> {
     );
   }
 
-  optionWidget(Question question, DataManager value) {
+  optionWidget(Question question, DataManager value, int questionLength) {
     void onClickedOption(Option option) {
       if (question.isLocked) {
         return;
@@ -199,7 +223,7 @@ class _QuizRuntimeScreenState extends State<QuizRuntimeScreen> {
 
         // Move to the next question
         Future.delayed(const Duration(seconds: 1), (){
-          if (_questionNumber < value.getQuizList()[_selectedQuiz!].questions.length) {
+          if (_questionNumber < questionLength) {
             _pageController.nextPage(
               duration: const Duration(milliseconds: 250),
               curve: Curves.easeInOut,
@@ -208,15 +232,24 @@ class _QuizRuntimeScreenState extends State<QuizRuntimeScreen> {
               _questionNumber++;
             });
           } else {
-            if(score > value.getQuizList()[_selectedQuiz!].questions.length / 2) {
+            if(score > questionLength / 2) {
               // Set isCompleted to true for the selected topic in the selected quiz
               Provider.of<DataManager>(context, listen: false).markQuizCompleted(_selectedQuiz!);
             }
 
+            // store to local database
             Provider.of<DataManager>(context, listen: false).addResult(
-                value.quizList[_selectedQuiz!].name,
+                userUID ?? 'NA',
+                val20ue.quizList[_selectedQuiz!].name,
                 score
             );
+
+            // store to online database
+            _firestoreService.addResult(Result(
+                userToken: userUID!,
+                quizName: value.quizList[_selectedQuiz!].name,
+                score: score, takenQuizId: '', quizTakerName: ''
+            ));
 
             // If it's the last question, navigate to the ResultScreen
             Navigator.pushReplacement(
@@ -226,7 +259,7 @@ class _QuizRuntimeScreenState extends State<QuizRuntimeScreen> {
                   courseIndex: widget.courseIndex,
                   selectedQuiz: widget.selectedQuiz,
                   score: score,
-                  total: value.getQuizList()[_selectedQuiz!].questions.length,
+                  total: value.getQuizList()[_selectedQuiz!].questions.length, token: '',
                 ),
               ),
             );
@@ -260,7 +293,7 @@ class _QuizRuntimeScreenState extends State<QuizRuntimeScreen> {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Expanded(child: reusableText(option.text!, textColor)),
+            Expanded(child: reusableText(option.text, textColor)),
             getIconForOption(option, question)
           ],
         ),
@@ -346,14 +379,24 @@ class _QuizRuntimeScreenState extends State<QuizRuntimeScreen> {
                         courseIndex: widget.courseIndex,
                         selectedQuiz: widget.selectedQuiz,
                         score: score,
-                        total: value.getQuizList()[widget.selectedQuiz].questions.length
+                        total: value.getQuizList()[widget.selectedQuiz].questions.length, token: '',
                     )
                 )
               );
+
+              // store to local database
               Provider.of<DataManager>(context, listen: false).addResult(
+                  userUID ?? 'NA',
                   value.quizList[_selectedQuiz!].name,
                   score
               );
+
+              // store to online database
+              _firestoreService.addResult(Result(
+                  userToken: userUID!,
+                  quizName: value.quizList[_selectedQuiz!].name,
+                  score: score, takenQuizId: '', quizTakerName: ''
+              ));
             },
             child: reusableSubtitleText('Give Up' , Colors.white)
         ),

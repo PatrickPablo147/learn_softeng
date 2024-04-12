@@ -31,6 +31,7 @@ class HiveDatabase {
     List<List<String>> jsonQuizList = [];
     for (var quiz in quizList) {
       List<String> quizData = [
+        quiz.token.toString(),
         quiz.name.toString(), // Ensure name is converted to string
         quiz.isCompleted.toString(),
       ];
@@ -54,7 +55,7 @@ class HiveDatabase {
     List<Quiz> quizList = [];
     for (var quizData in jsonQuizList) {
       List<Question> questions = [];
-      for (var questionData in quizData.skip(2)) {
+      for (var questionData in quizData.skip(3)) {
         List<String> questionFields = questionData.split('|');
         List<Option> options = [];
         List<String> optionTexts = questionFields[1].split(';');
@@ -76,8 +77,9 @@ class HiveDatabase {
         ));
       }
       quizList.add(Quiz(
-        name: quizData[0],
-        isCompleted: quizData[1] == 'true',
+        token: quizData[0],
+        name: quizData[1],
+        isCompleted: quizData[2] == 'true',
         questions: questions,
       ));
     }
@@ -88,6 +90,9 @@ class HiveDatabase {
     List<List<String>> jsonQuizResultList = [];
     for (var result in quizResultList) {
       List<String> resultData = [
+        result.userToken,
+        result.takenQuizId,
+        result.quizTakerName,
         result.quizName,
         result.score.toString(),
       ];
@@ -99,10 +104,13 @@ class HiveDatabase {
   List<Result> convertJsonToQuizResultList(List<List<String>> jsonQuizResultList) {
     List<Result> quizResultList = [];
     for (var resultData in jsonQuizResultList) {
-      double score = double.parse(resultData[1]);
+      double score = double.parse(resultData[4]);
       int scoreInt = score.toInt();
       quizResultList.add(Result(
-        quizName: resultData[0],
+        userToken: resultData[0],
+        takenQuizId: resultData[1],
+        quizTakerName: resultData[2],
+        quizName: resultData[3],
         score: scoreInt,
       ));
     }

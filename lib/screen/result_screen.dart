@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:percent_indicator/circular_percent_indicator.dart';
 import 'package:software_engineering/const/colors.dart';
 import 'package:software_engineering/screen/home_screen.dart';
+import 'package:software_engineering/screen/oline_quiz_runtime_screen.dart';
 import 'package:software_engineering/screen/quiz_runtime_screen.dart';
 import 'package:software_engineering/utils/reusableText.dart';
 
@@ -16,9 +17,10 @@ import 'package:software_engineering/utils/reusableText.dart';
 class ResultScreen extends StatelessWidget {
   final int selectedQuiz;
   final int courseIndex;
+  final String token;
   final int score;
   final int total;
-  const ResultScreen({Key? key, required this.score, required this.total, required this.selectedQuiz, required this.courseIndex}) : super(key: key);
+  const ResultScreen({Key? key, required this.score, required this.total, required this.selectedQuiz, required this.courseIndex, required this.token}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -184,7 +186,9 @@ class ResultScreen extends StatelessWidget {
         physics: const NeverScrollableScrollPhysics(),
         children: [
           MaterialButton(
-            onPressed: () => Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => QuizRuntimeScreen(courseIndex: courseIndex, selectedQuiz: selectedQuiz + 1, key: UniqueKey(),))),
+            onPressed: () => token == '' ?
+                Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => QuizRuntimeScreen(courseIndex: courseIndex, selectedQuiz: selectedQuiz + 1, key: UniqueKey(),)))
+                : Navigator.pop(context),
             padding: const EdgeInsets.all(24),
             minWidth: double.infinity,
             color: Colors.white,
@@ -208,7 +212,7 @@ class ResultScreen extends StatelessWidget {
           ),
           const SizedBox(height: 12,),
           MaterialButton(
-            onPressed: () => Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => QuizRuntimeScreen(courseIndex: courseIndex, selectedQuiz: selectedQuiz, key: UniqueKey(),))),
+            onPressed: () => Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => OnlineQuizRuntimeScreen(token: token, key: UniqueKey(),))),
             padding: const EdgeInsets.all(24),
             minWidth: double.infinity,
             color: Colors.white,

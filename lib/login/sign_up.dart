@@ -1,7 +1,10 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:software_engineering/login/sign_in.dart';
+import 'package:software_engineering/models/user.dart';
 import 'package:software_engineering/services/auth_service.dart';
+import 'package:software_engineering/services/firestore_service.dart';
 import '../const/colors.dart';
 import '../controller/bottom_nav_bar.dart';
 import '../utils/reusableText.dart';
@@ -18,8 +21,19 @@ class _SignUpScreenState extends State<SignUpScreen> {
   TextEditingController emailController = TextEditingController();
   TextEditingController passwordController = TextEditingController();
   TextEditingController confirmPassController = TextEditingController();
+  bool? isTeacher;
+  late CollectionReference _usersRef;
 
   final AuthService _authService = AuthService();
+  final FirestoreService _firestoreService = FirestoreService();
+
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    _usersRef = FirebaseFirestore.instance.collection(USERS_COLLECTION_REF);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -167,7 +181,37 @@ class _SignUpScreenState extends State<SignUpScreen> {
                   ),
                 ),
               ),
-          
+
+              const SizedBox(height: 10,),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const SizedBox(width: 10,),
+                  Expanded(
+                    child: RadioListTile(
+                      title: const Text('student'),
+                      value: false,
+                      onChanged: (value) {
+                        setState(() {
+                          print(value);
+                          isTeacher = value;
+                      });
+                    }, groupValue: isTeacher,),
+                  ),
+                  Expanded(
+                    child: RadioListTile(
+                      title: const Text('teacher'),
+                      value: true,
+                      onChanged: (value) {
+                        setState(() {
+                          print(value);
+                          isTeacher = value;
+                      });
+                    }, groupValue: isTeacher,),
+                  ),
+                ],
+              ),
+
               Center(
                 child: Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 25.0, vertical: 12),
@@ -179,20 +223,39 @@ class _SignUpScreenState extends State<SignUpScreen> {
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12), // Set your desired border radius
                       ),
-                      onPressed: () {
+                      onPressed: () async {
                         String userName = usernameController.text.trim();
                         String email = emailController.text.trim();
                         String password = passwordController.text.trim();
 
-                        _authService.createUserWithEmailPassword(email, password, userName);
+                        try {
+                          // Create user with email and password
+                          String token = await _authService.createUserWithEmailPassword(email, password, userName);
 
+                          // Once user is created, add user details to Firestore
+                          await _firestoreService.addUsers(
+                              Users(
+                                token: token,
+                                username: userName,
+                                status: isTeacher!,
+                                email: email,
+                                password: password
+                              )
+                          );
 
-                        Navigator.push(context, MaterialPageRoute(builder: (context) => const MyBottomNavBar()));
-          
-                        usernameController.clear();
-                        emailController.clear();
-                        passwordController.clear();
-                        confirmPassController.clear();
+                          // Navigate to next screen
+                          Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => MyBottomNavBar()));
+
+                          // Clear text fields
+                          usernameController.clear();
+                          emailController.clear();
+                          passwordController.clear();
+                          confirmPassController.clear();
+                        } catch (e) {
+                          // Handle any errors here
+                          print("Error occurred during signup: $e");
+                        }
+
                       },
                       child: reusableText('Sign Up', Colors.white)
                   ),

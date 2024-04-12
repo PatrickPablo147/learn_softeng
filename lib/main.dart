@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
@@ -21,6 +22,10 @@ void main() async {
 
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform
+  );
+
+  FirebaseFirestore.instance.settings = const Settings(
+    persistenceEnabled: true
   );
 
   // initialize hive
@@ -69,11 +74,18 @@ class HomeController extends StatelessWidget {
       body: StreamBuilder<User?>(
         stream: FirebaseAuth.instance.authStateChanges(),
         builder: (context, snapshot){
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const CircularProgressIndicator(); // Show a loading indicator while waiting for data
+          }
+          if (snapshot.hasError) {
+            return Text('Error: ${snapshot.error}');
+          }
           // check if there is user's log in
           if(snapshot.hasData) {
-            return const MyBottomNavBar();
+            return MyBottomNavBar();
           }
           else {
+            MyBottomNavBar.controller.jumpToTab(0);
             return const SignInScreen();
           }
         },

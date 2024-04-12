@@ -13,7 +13,7 @@ class SettingsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
 
-    final AuthService _authService = AuthService();
+    final AuthService authService = AuthService();
 
     return Scaffold(
       body: SafeArea(
@@ -23,7 +23,7 @@ class SettingsScreen extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // Navigation
-              _navigation(context, _authService),
+              _navigation(context, authService),
             ],
           ),
         )
@@ -35,7 +35,7 @@ class SettingsScreen extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        reusableText(FirebaseAuth.instance.currentUser!.displayName.toString(), Colors.black),
+        reusableText(FirebaseAuth.instance.currentUser?.displayName.toString() ?? 'NO USERS', Colors.black),
         const Divider(
           thickness: 1,
           color: Colors.grey,

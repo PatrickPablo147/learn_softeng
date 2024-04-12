@@ -1,4 +1,3 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:provider/provider.dart';
@@ -8,24 +7,24 @@ import 'package:software_engineering/models/result.dart';
 import 'package:software_engineering/services/firestore_service.dart';
 import 'package:software_engineering/utils/reusableText.dart';
 
-class HistoryScreen extends StatefulWidget {
-  const HistoryScreen({Key? key}) : super(key: key);
+class QuizResultScreen extends StatefulWidget {
+  final String quizId;
+  final String quizName;
+
+  const QuizResultScreen({required this.quizId, Key? key, required this.quizName}) : super(key: key);
 
   @override
-  State<HistoryScreen> createState() => _HistoryScreenState();
+  State<QuizResultScreen> createState() => _HistoryScreenState();
 }
 
-class _HistoryScreenState extends State<HistoryScreen> {
+class _HistoryScreenState extends State<QuizResultScreen> {
   final FirestoreService _firestoreService = FirestoreService();
 
-  late Stream<QuerySnapshot> _resultStream;
 
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
-
-    _resultStream = _firestoreService.getCurrentUserResult();
   }
 
   @override
@@ -39,19 +38,19 @@ class _HistoryScreenState extends State<HistoryScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                reusableTitleText("My Result's", textColor),
+                reusableTitleText("${widget.quizName} Result's", textColor),
                 const SizedBox(height: 28,),
                 Container(
                   width: MediaQuery.of(context).size.width,
                   padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 24),
                   decoration: const BoxDecoration(
-                    color: primaryColor,
-                    borderRadius: BorderRadius.only(topRight: Radius.circular(12), topLeft: Radius.circular(12))
+                      color: primaryColor,
+                      borderRadius: BorderRadius.only(topRight: Radius.circular(12), topLeft: Radius.circular(12))
                   ),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      reusableSubtitleText("Quiz name", Colors.white),
+                      reusableSubtitleText("Name", Colors.white),
                       reusableSubtitleText("Score", Colors.white)
                     ],
                   ),
@@ -59,9 +58,11 @@ class _HistoryScreenState extends State<HistoryScreen> {
 
                 Expanded(
                   child: StreamBuilder(
-                    stream: _resultStream,
+                    stream: _firestoreService.getTargetQuizResult(widget.quizId),
                     builder: (context, snapshot) {
                       List results = snapshot.data?.docs ?? [];
+                      print(widget.quizId);
+                      print('results: $results');
                       return ListView.builder(
                         shrinkWrap: true,
                         itemCount: results.length,
@@ -74,7 +75,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               crossAxisAlignment: CrossAxisAlignment.center,
                               children: [
-                                Expanded(child: reusableText(result.quizName, Colors.black)),
+                                Expanded(child: reusableText(result.quizTakerName, Colors.black)),
                                 reusableText(result.score.toString(), Colors.black),
                               ],
                             ),

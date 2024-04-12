@@ -1,5 +1,5 @@
 class Option {
-  String? text;
+  String text;
   bool isCorrect;
 
   Option({
@@ -7,17 +7,26 @@ class Option {
     required this.isCorrect
   });
 
-  Map<String, dynamic> toJson() {
-    return {
-      'text': text,
-      'isCorrect': isCorrect,
-    };
+  Option.fromJson(Map<String, Object?> json) :
+        this(
+        text: json['text']! as String,
+        isCorrect: json['isCorrect']! as bool,
+      );
+
+  Option copyWith({
+    String? text,
+    bool? isCorrect,
+  }) {
+    return Option(
+      text: text ?? this.text,
+      isCorrect: isCorrect ?? this.isCorrect,
+    );
   }
 
-  factory Option.fromJson(Map<String, dynamic> json) {
-    return Option(
-      text: json['text'],
-      isCorrect: json['isCorrect'],
-    );
+  Map<String, Object> toJson() {
+    return {
+      'text' : text,
+      'isCorrect' : isCorrect,
+    };
   }
 }

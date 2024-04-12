@@ -70,9 +70,9 @@ class DataManager extends ChangeNotifier {
     return quizResult;
   }
 
-  void addResult(String quizName, int score) {
+  void addResult(String token, String quizName, int score) {
     quizResult.add(
-      Result(quizName: quizName, score: score),
+      Result(userToken: token, quizName: quizName, score: score, takenQuizId: '', quizTakerName: ''),
     );
 
     _saveData();
@@ -95,6 +95,7 @@ class DataManager extends ChangeNotifier {
   // Generate a default Quiz
   List<Quiz> quizList = [
     Quiz(
+      token: '',
         name: 'Chapter 1: What is software engineering?',
         questions: [
           Question(
@@ -145,6 +146,7 @@ class DataManager extends ChangeNotifier {
         ],
     ),
     Quiz(
+        token: '',
         name: 'Chapter 2: Software development and life cycle',
         questions: [
           Question(
@@ -195,6 +197,7 @@ class DataManager extends ChangeNotifier {
         ]
     ),
     Quiz(
+        token: '',
         name: 'Chapter 3: Software requirements',
         questions: [
           Question(
@@ -245,6 +248,7 @@ class DataManager extends ChangeNotifier {
         ]
     ),
     Quiz(
+        token: '',
         name: 'Chapter 4: Software Design',
         questions: [
           Question(
@@ -295,6 +299,7 @@ class DataManager extends ChangeNotifier {
         ]
     ),
     Quiz(
+      token: '',
         name: 'Chapter 5: Software Coding',
         questions: [
         Question(
@@ -345,6 +350,7 @@ class DataManager extends ChangeNotifier {
       ],
     ),
     Quiz(
+      token: '',
         name: 'Chapter 6: Creating Flow Graphs',
         questions: [
           Question(
@@ -395,6 +401,7 @@ class DataManager extends ChangeNotifier {
         ]
     ),
     Quiz(
+      token: '',
       name: 'Chapter 7: Software Maintenance',
       questions: [
         Question(
@@ -445,6 +452,7 @@ class DataManager extends ChangeNotifier {
       ],
     ),
     Quiz(
+      token: '',
       name: 'Chapter 8: Software Metrics',
       questions: [
         Question(
@@ -495,6 +503,7 @@ class DataManager extends ChangeNotifier {
       ],
     ),
     Quiz(
+      token: '',
       name: 'Chapter 9: Software Planning and Scheduling',
       questions: [
         Question(
@@ -545,6 +554,7 @@ class DataManager extends ChangeNotifier {
       ],
     ),
     Quiz(
+      token: '',
       name: 'Chapter 10: Software Cost Estimation',
       questions: [
         Question(
@@ -595,6 +605,7 @@ class DataManager extends ChangeNotifier {
       ],
     ),
     Quiz(
+      token: '',
       name: 'Chapter 11: Software Quality',
       questions: [
         Question(

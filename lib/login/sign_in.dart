@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:software_engineering/login/sign_up.dart';
 import 'package:software_engineering/services/auth_service.dart';
+import 'package:software_engineering/services/firestore_service.dart';
 
 import '../const/colors.dart';
 import '../utils/reusableText.dart';
@@ -135,8 +136,6 @@ class _SignInScreenState extends State<SignInScreen> {
                         String password = passwordController.text.trim();
 
                         _authService.signInWithEmailAndPassword(email, password);
-
-                        //Navigator.push(context, MaterialPageRoute(builder: (context) => const MyApp()));
 
                         emailController.clear();
                         passwordController.clear();
